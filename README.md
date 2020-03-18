@@ -1,0 +1,2 @@
+# SpecTemplate
+CMake project template
