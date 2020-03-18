@@ -1,0 +1,70 @@
+#ifndef SPECSSL_H
+#define SPECSSL_H
+
+#if defined(Windows)
+#include <WinSock2.h>
+#else
+#include <arpa/inet.h>
+#endif
+#include <map>
+#include <openssl/ssl.h>
+#include <openssl/err.h>
+
+
+/*
+ * Tips:
+    BoringSSL disables renegotiation by default.
+*/
+//class SpecSSL : public IEncrypt
+class SpecSSL {
+public:
+  static long long getGUID09();
+
+    //SpecSSL(ILog * iLog_, IFileAdapter * iFileAdapter_, IConfig * iConfig_);
+    bool  start() ;
+    void  stop()  ;
+
+
+    SSL * startEncryptSocket(int socket) ;
+    //void stopEncryptSocket(SSL * staff) ;
+    //int getSocketState(SSL * staff, int code) ;
+    //int do_handshakeSocket(SSL * staff) ;
+    //int readSocket(SSL * staff, void *buf, int num) ;
+    //int writeSocket(SSL * staff, const void *buf, int num) ;
+    void logErrors() ;
+    bool groupX509exists(uint64_t  groupID) ;
+
+
+    X509 * getX509(const void *buf, int num) ;
+    EVP_PKEY * getX509evp(X509 * x509) ;
+    //void freeX509(X509 * x509) ;
+    //void freeEVP(EVP_PKEY * evp) ;
+    bool checkX509(uint64_t  groupID,  uint64_t  avatarID,
+                            const char * strX509, int strX509len) ;
+    bool verify_it(const void* msg, size_t mlen, const void* sig, size_t slen, EVP_PKEY* evpX509) ;
+
+
+private:
+    const char * TAG = "SpecSSL";
+    int logLevel     {0};
+    int idleConnLife {5};
+    SSL_CTX *ctx  {nullptr};
+    BIO *errBIO   {nullptr};
+
+
+
+    //std::atomic<bool> keepRun {false};
+    //std::atomic<long long> useCount {0};
+
+    //std::set<unsigned long long> specGroupIDs;
+    std::map<uint64_t, X509 *> specGroupX509s;
+
+    static int printSSLErrors(const char *str, size_t len, void *anyData);
+    bool loadSpecGroups();
+    X509 * extractX509   (const std::string &inX509);
+    X509 * extractX509   (const void *buf, int num);    
+    time_t ASN1_TIME_to_DWORD(time_t curTime, ASN1_TIME * from);
+
+};
+
+#endif // SPECSSL_H
